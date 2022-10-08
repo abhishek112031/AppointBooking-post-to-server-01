@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Appointment Booking Application:</h1>
+    <form onsubmit="saveToLocalStorage(event)">
+        <label> Name</label>
+        <input id='username' type="text" name="username" required />
+        <label> EmailId</label>
+        <input id='email' type="email" name="emailId" required />
+        <label> Phone Number</label>
+        <input id='phonenumber' type="tel" name="phonenumber" />
+        <button> Submit </button>
+    </form>
+    <ul id="ListOfUsers"></ul>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
+
+    <script>
+
+        function saveToLocalStorage(event) {
+            event.preventDefault();
+
+            const name = event.target.username.value;
+            const email = event.target.emailId.value;
+            const phone = event.target.phonenumber.value;
+
+            const obj = {
+                name,
+                email,
+                phone
+            }
+
+            // const obj_string = JSON.stringify(obj);
+            // localStorage.setItem(obj.email, obj_string);
+
+            axios.post('https://crudcrud.com/api/a1dfa6f7b28641c89d3f807194027f86/AppointmentData',obj)
+            .then((response=>{
+                console.log(response)
+            showUsersOnScreen(response.data);
+
+            }))
+            .catch(err=>{
+                document.body.innerHTML+="<h4> something went wrong</h4>"
+                console.log(err)
+            })
+
+
+
+            // showUsersOnScreen(obj);
+        }
+
+        //on refreshing:
+        window.addEventListener('DOMContentLoaded',()=>{
+            // const local_storage=localStorage;
+            // const local_storage_keys=Object.keys(local_storage);
+            // for(var i=0;i<local_storage_keys.length;i++){
+            //     const each_key=local_storage_keys[i];
+            //     const local_storage_sting_obj=local_storage[each_key]
+            //     const local_storage_obj=JSON.parse(local_storage_sting_obj)
+            //     showUsersOnScreen(local_storage_obj);//works
+            // }
+
+            axios.get('https://crudcrud.com/api/a1dfa6f7b28641c89d3f807194027f86/AppointmentData')
+            .then((response)=>{
+                console.log(response);
+                for(let i=0;i<response.data.length;i++){  //***note: response.data is an array of object***
+                    showUsersOnScreen(response.data[i])
+
+                }
+            })
+            .catch((err)=>{
+                console.log(err)
+            })
+          
+          
+          
+          
+            
+        })
+
+        function showUsersOnScreen(user){
+            //works
+            document.getElementById("username").value="";
+            document.getElementById("email").value="";
+            document.getElementById("phonenumber").value="";
+
+            if (localStorage.getItem(user.email)){ //works:dont allow duplicate key(email);
+                remove_user_from_screen(user.email);
+            }
+
+        const parent_node=document.getElementById("ListOfUsers");
+        const child_node=`<li id=${user.email}>${user.name}--${user.email}--${user.phone}<button onclick=delete_users_localstorage('${user.email}')>Del</button><button onclick=editUser('${user.name}','${user.email}','${user.phone}')>Edit user</button></li>`
+        parent_node.innerHTML=parent_node.innerHTML+child_node
+        }
+        function delete_users_localstorage(emailId){
+            localStorage.removeItem(emailId);//works
+            remove_user_from_screen(emailId);
+        }
+        function remove_user_from_screen(emailId){
+            const parent=document.getElementById("ListOfUsers");
+            const child=document.getElementById(emailId);
+            if(child){
+                parent.removeChild(child);
+
+            }
+            //works
+        }
+
+        // edit users:--->>
+        function editUser(name,emailId,phone){
+            document.getElementById("username").value=name;
+            document.getElementById("email").value=emailId;
+            document.getElementById("phonenumber").value=phone;
+            delete_users_localstorage(emailId);
+
+        }
+
+
+
+
+        
+    </script>
+</body>
+
+</html>
